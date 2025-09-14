@@ -1,140 +1,55 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ducky Test - Day8 Lab</title>
-  <style>
-    body {
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
-      margin: 40px;
-      background-color: #f4f7fb;
-      color: #333;
-    }
-
-    h1 {
-      color: #0052cc;
-    }
-
-    section {
-      margin-bottom: 30px;
-      padding: 20px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    button {
-      margin: 10px 0;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      background-color: #0052cc;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    button:hover {
-      background-color: #003c99;
-    }
-
-    pre {
-      background: #f4f4f4;
-      padding: 12px;
-      border-radius: 5px;
-      font-size: 14px;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .footer {
-      margin-top: 30px;
-      text-align: center;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .status {
-      color: green;
-      font-weight: bold;
-    }
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
   </style>
-  <img src="assets/logo.png" alt="Logo" class="logo" width=200 heigh=200/>
 </head>
 <body>
-  <h1>🐤 Ducky Test 靜態網站 - Day8 Lab</h1>
-  <p>這是一個部署在 <b>AWS S3 + CloudFront</b> 的靜態網站，並透過 <b>CodePipeline</b> 自動化上線。</p>
-
-  <!-- 區塊 1: 呼叫 API -->
-  <section>
-    <h2>1. 呼叫 API</h2>
-    <p>這會測試我們的 API Gateway / Lambda 功能（Day7 已串接）</p>
-    <button onclick="callApi()">呼叫 /api/hello</button>
-    <pre id="apiResult">尚未呼叫</pre>
-  </section>
-
-  <!-- 區塊 2: Cognito 登入 -->
-  <section>
-    <h2>2. Cognito 登入</h2>
-    <p>使用 AWS Cognito Hosted UI 登入，未來 Day9 會串接會員專屬頁面。</p>
-    <button onclick="goLogin()">前往 Cognito 登入頁</button>
-  </section>
-
-  <!-- 區塊 3: CloudFront / S3 部署狀態 -->
-  <section>
-    <h2>3. CloudFront / S3 部署狀態</h2>
-    <p>用來驗證我們的 <b>CodePipeline 自動化部署</b> 是否生效</p>
-    <p>最後更新時間：<span id="lastUpdated" class="status"></span></p>
-    <p>CloudFront Distribution ID：<span id="cfDistId" class="status"></span></p>
-    <p>S3 Bucket：<span id="s3Bucket" class="status"></span></p>
-  </section>
-
-  <div class="footer">
-    © 2025 Ducky Test Lab - Powered by AWS S3 + CloudFront + CodePipeline
-  </div>
-
-  <script>
-    // ========== 1. 呼叫 API ==========
-    async function callApi() {
-      try {
-        const res = await fetch('/api/hello'); // 直接呼叫 /api/*
-        if (!res.ok) throw new Error("HTTP 錯誤 " + res.status);
-
-        const data = await res.json();
-        document.getElementById('apiResult').textContent =
-          JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById('apiResult').textContent =
-          'API 呼叫失敗: ' + err;
-      }
-    }
-
-    // ========== 2. Cognito 登入 ==========
-    function goLogin() {
-      const clientId = "5ug0mo74oh6ma666kd9dkpbqk5";
-      const redirectUri = encodeURIComponent("https://www.ducky-test.tw/auth/callback");
-      const loginUrl =
-        `https://ducky-unique123.auth.us-east-1.amazoncognito.com/login?` +
-        `client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirectUri}`;
-      window.location.href = loginUrl;
-    }
-
-    // ========== 3. CloudFront / S3 部署狀態 ==========
-    function showDeploymentInfo() {
-      // 這三個值會依照你的實際環境替換
-      const cfDistributionId = "ABC123XYZ";   // CloudFront Distribution ID
-      const s3BucketName = "2025ithome-ducky"; // S3 Bucket 名稱
-      const lastUpdated = new Date().toLocaleString("zh-TW");
-
-      document.getElementById('cfDistId').textContent = cfDistributionId;
-      document.getElementById('s3Bucket').textContent = s3BucketName;
-      document.getElementById('lastUpdated').textContent = lastUpdated;
-    }
-
-    // 初始化頁面狀態
-    showDeploymentInfo();
-  </script>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="zh-Hant"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;歡迎來到Ducky的網站！Day6&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-family: Arial, sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>height: 100vh;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #f0f0f0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.container {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: white;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 40px 60px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>h1 {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #333;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>p {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #666;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>line-height: 1.6;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="container"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h1&gt;歡迎來到Ducky的網站！Day6&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p&gt;這是一個簡單的靜態網頁範例。&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p&gt;感謝您的到來，希望您有個美好的一天。&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
 </body>
 </html>
