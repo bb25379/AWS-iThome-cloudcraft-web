@@ -1,59 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Website Home Page</title>
+    <title>會員專屬頁面</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            text-align: center;
-        }
-        .container {
-            background-color: white;
-            padding: 40px 60px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #333;
-        }
-        p {
-            color: #666;
-            line-height: 1.6;
-        }
-        .login-button {
-            padding: 10px 20px;
-            font-size: 16px;
-            color: white;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none; /* 移除超連結底線 */
-            margin-top: 20px;
-            display: inline-block;
-        }
-        .login-button:hover {
-            background-color: #0056b3;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        #profile-section { border: 1px solid #ccc; padding: 20px; margin: 20px auto; width: 60%; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to Ducky website - Day9</h1>
-        <p>Now hosted on Amazon S3!<br>update the login button.</p>
-        
-        <a href="https://ducky-unique123.auth.us-east-1.amazoncognito.com/login?client_id=5ug0mo74oh6ma666kd9dkpbqk5&response_type=code&scope=email+openid+profile&redirect_uri=https://www.ducky-test.tw/auth/callback/index.html" class="login-button">
-            登入會員
-        </a>
+    <h1>歡迎來到會員專區！</h1>
+    <div id="profile-section">
+        <h2 id="welcome-message">請先登入</h2>
+        <p id="user-info"></p>
     </div>
+
+    <script>
+        // 此函式用於解析 JWT 權杖
+        function parseJwt (token) {
+          try {
+            let base64Url = token.split('.')[1];
+            let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+          } catch (e) {
+            console.error("無法解析 JWT 權杖：", e);
+            return null;
+          }
+        }
+
+        // 檢查 URL 中是否有 Token
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const idToken = hashParams.get('id_token');
+
+        if (idToken) {
+            // 如果找到 id_token，則解析並顯示使用者資訊
+            const decodedToken = parseJwt(idToken);
+            if (decodedToken) {
+                // 將 id_token 儲存到 Session，以備後續使用
+                sessionStorage.setItem("id_token", idToken);
+
+                // 在頁面上顯示資訊
+                document.getElementById("welcome-message").innerText = `Hi, ${decodedToken['cognito:username'] || '會員'}`;
+                document.getElementById("user-info").innerHTML = `
+                    <p><strong>Email:</strong> ${decodedToken.email}</p>
+                    <p><strong>使用者 ID (Sub):</strong> ${decodedToken.sub}</p>
+                    <p><strong>Token 權限範圍 (Scope):</strong> ${decodedToken.scope}</p>
+                `;
+            }
+        } else {
+            // 如果沒有 Token，提供登入連結
+            const authUrl = 'YOUR_COGNITO_AUTH_URL'; // 請替換成您的 Cognito Hosted UI URL
+            document.getElementById("profile-section").innerHTML = `
+                <p>您尚未登入。請點擊以下連結登入：</p>
+                <a href="${authUrl}">登入</a>
+            `;
+        }
+    </script>
 </body>
 </html>
