@@ -10,7 +10,7 @@
     </style>
 </head>
 <body>
-    <h1>歡迎來到會員專區！</h1>
+    <h1>歡迎來到Ducky的會員專區！</h1>
     <div id="profile-section">
         <h2 id="welcome-message">請先登入</h2>
         <p id="user-info"></p>
@@ -53,9 +53,9 @@
             }
         } else {
             // 如果沒有 Token，提供登入連結
-            const authUrl = 'YOUR_COGNITO_AUTH_URL'; // 請替換成您的 Cognito Hosted UI URL
+            const authUrl = 'https://ducky-unique123.auth.us-east-1.amazoncognito.com/login?client_id=5ug0mo74oh6ma666kd9dkpbqk5&response_type=code&scope=email+openid+profile&redirect_uri=https://www.ducky-test.tw/auth/callback/index.html'; // 請替換成您的 Cognito Hosted UI URL
             document.getElementById("profile-section").innerHTML = `
-                <p>您尚未登入。請點擊以下連結登入：</p>
+                <p>Day13-您尚未登入。請點擊以下連結登入：</p>
                 <a href="${authUrl}">登入</a>
             `;
         }
