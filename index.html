@@ -53,7 +53,7 @@
             }
         } else {
             // 如果沒有 Token，提供登入連結
-            const authUrl = 'https://ducky-unique123.auth.us-east-1.amazoncognito.com/login?client_id=5ug0mo74oh6ma666kd9dkpbqk5&response_type=code&scope=email+openid+profile&redirect_uri=https://www.ducky-test.tw/auth/callback/index.html'; // 請替換成您的 Cognito Hosted UI URL
+            const authUrl = 'https://ducky-unique123.auth.us-east-1.amazoncognito.com/login?client_id=5ug0mo74oh6ma666kd9dkpbqk5&response_type=code&scope=email+openid+profile&redirect_uri=https://www.ducky-test.tw/index.html'; // 請替換成您的 Cognito Hosted UI URL
             document.getElementById("profile-section").innerHTML = `
                 <p>Day13-您尚未登入。請點擊以下連結登入：</p>
                 <a href="${authUrl}">登入</a>
