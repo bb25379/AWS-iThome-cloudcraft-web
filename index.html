@@ -1,49 +1,82 @@
-<div id="status">Day13 - 尚未登入</div>
-<div id="user-info" style="display:none;">
-  <h2 id="welcome"></h2>
-  <p id="email"></p>
-  <img id="avatar" src="" alt="大頭照" style="width:80px; border-radius:50%;">
-</div>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ducky會員專區</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    #user-info { border: 1px solid #ccc; padding: 20px; margin: 20px auto; width: 60%; }
+    img { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Day13 - 會員專屬頁面</h1>
+  <div id="status">尚未登入</div>
+  <div id="user-info" style="display:none;">
+    <h2 id="welcome"></h2>
+    <p id="email"></p>
+    <img id="avatar" src="" alt="大頭照" style="width:80px; border-radius:50%;">
+  </div>
 
-<script>
-  function parseJwt(token) {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-  }
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get("code");
-
-  if (code) {
-    fetch("https://ducky-unique123.auth.us-east-1.amazoncognito.com/login?client_id=5ug0mo74oh6ma666kd9dkpbqk5&response_type=code&scope=email+openid+profile&redirect_uri=https://www.ducky-test.tw/index.html", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `grant_type=authorization_code&client_id=YOUR_CLIENT_ID&code=${code}&redirect_uri=https://www.ducky-test.tw/index.html`
-    })
-    .then(res => res.json())
-    .then(data => {
-      const user = parseJwt(data.id_token);
-
-      document.getElementById("status").innerText = "已登入";
-      document.getElementById("user-info").style.display = "block";
-
-      // 顯示個人資訊
-      document.getElementById("welcome").innerText = `哈囉，${user.name || user["cognito:username"]}！`;
-      document.getElementById("email").innerText = `目前登入帳號：${user.email}`;
-
-      if (user.picture) {
-        document.getElementById("avatar").src = user.picture;
-      } else {
-        document.getElementById("avatar").style.display = "none";
+  <script>
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        console.error("JWT 解析失敗:", e);
+        return null;
       }
+    }
 
-      // 🔹 跳轉到使用者專屬頁面（依 username 區分）
-      window.location.href = `https://www.ducky-test.tw/${user["cognito:username"]}/index.html`;
-    });
-  }
-</script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
 
+    if (code) {
+      // 🔹 呼叫 Cognito OAuth2 Token Endpoint
+      fetch("https://ducky-unique123.auth.us-east-1.amazoncognito.com/oauth2/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `grant_type=authorization_code&client_id=YOUR_CLIENT_ID&code=${code}&redirect_uri=https://www.ducky-test.tw/index.html`
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.id_token) {
+          const user = parseJwt(data.id_token);
+
+          document.getElementById("status").innerText = "✅ 已登入";
+          document.getElementById("user-info").style.display = "block";
+
+          // 顯示個人資訊
+          document.getElementById("welcome").innerText = `哈囉，${user.name || user["cognito:username"]}！`;
+          document.getElementById("email").innerText = `目前登入帳號：${user.email}`;
+
+          if (user.picture) {
+            document.getElementById("avatar").src = user.picture;
+          } else {
+            document.getElementById("avatar").style.display = "none";
+          }
+
+          // 🔹 跳轉到使用者專屬頁面（依 username 區分）
+          // window.location.href = `https://www.ducky-test.tw/${user["cognito:username"]}/index.html`;
+        } else {
+          document.getElementById("status").innerText = "登入失敗，請重新登入";
+        }
+      })
+      .catch(err => {
+        console.error("Token 取得失敗:", err);
+        document.getElementById("status").innerText = "系統錯誤，請稍後再試";
+      });
+    } else {
+      // 🔹 沒有 code → 顯示登入按鈕
+      const authUrl = https://ducky-unique123.auth.us-east-1.amazoncognito.com/login?client_id=5ug0mo74oh6ma666kd9dkpbqk5&response_type=code&scope=email+openid+profile&redirect_uri=https://www.ducky-test.tw/index.html";
+      document.getElementById("status").innerHTML = `❌ 尚未登入 <br><br><a href="${authUrl}">👉 點此登入</a>`;
+    }
+  </script>
+</body>
+</html>
