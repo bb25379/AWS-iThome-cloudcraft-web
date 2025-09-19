@@ -1,148 +1,76 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>使用者中心與S3檔案上傳</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1121.0/aws-sdk.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.0/dist/amazon-cognito-identity.min.js"></script>
+    <title>Cognito Callback</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        pre {
+            background-color: #eee;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            overflow-x: auto;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 font-sans">
-
-<div id="profile-container" class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full transition-all duration-300 transform">
-    <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">使用者中心</h2>
-    <div class="text-center mb-4">
-        <p class="text-gray-600">歡迎，<span id="user-email-display" class="font-bold text-blue-600"></span></p>
-    </div>
-    
-    <div class="border-t border-gray-200 pt-4 mt-4">
-        <h3 class="text-xl font-bold text-gray-800 mb-4">檔案上傳</h3>
-        <input type="file" id="file-input" class="w-full border border-gray-300 p-2 rounded-lg mb-4 cursor-pointer">
-        <button id="upload-btn" class="w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors">上傳檔案</button>
-        <p id="upload-status" class="mt-4 text-center text-sm"></p>
+<body>
+    <div class="container">
+        <h1>Processing Authentication...</h1>
+        <p>Please wait while we process your login.</p>
+        <div id="token-info"></div>
     </div>
 
-    <button id="logout-btn" class="w-full mt-6 bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">登出</button>
-</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.substring(1); // Remove the '#'
+            const params = new URLSearchParams(hash);
 
-<script>
-    // 請在這裡替換成你的 AWS Cognito 和 S3 資訊
-    const COGNITO_USER_POOL_ID = 'us-east-1_0Kius6YBt'; // 你的 User Pool ID
-    const COGNITO_CLIENT_ID = '5ug0mo74oh6ma666kd9dkpbqk5'; // 你的 App Client ID
-    const S3_BUCKET_REGION = 'us-east-1'; // 你的 S3 儲存桶所在的區域
-    const S3_BUCKET_NAME = '2025ithome-ducky'; // 你的 S3 儲存桶名稱
-    // 請替換為你的 Identity Pool ID
-    const IDENTITY_POOL_ID = 'us-east-1:4682c527-47ae-4357-b444-bdec69d3f4e2';
+            const idToken = params.get('id_token');
+            const accessToken = params.get('access_token');
+            const expiresIn = params.get('expires_in');
 
-    // 初始化 Cognito 認證
-    const poolData = {
-        UserPoolId: COGNITO_USER_POOL_ID,
-        ClientId: COGNITO_CLIENT_ID
-    };
-    const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+            const tokenInfoDiv = document.getElementById('token-info');
 
-    const profileContainer = document.getElementById('profile-container');
-    const userEmailDisplay = document.getElementById('user-email-display');
-    const logoutBtn = document.getElementById('logout-btn');
-    const fileInput = document.getElementById('file-input');
-    const uploadBtn = document.getElementById('upload-btn');
-    const uploadStatus = document.getElementById('upload-status');
-
-    let cognitoUser;
-
-    // 檢查是否有有效的使用者會話
-    const checkUserSession = () => {
-        cognitoUser = userPool.getCurrentUser();
-        if (cognitoUser != null) {
-            cognitoUser.getSession((err, session) => {
-                if (err) {
-                    // 會話無效或過期，回到登入頁面
-                    console.error("Session is invalid or expired.", err);
-                    alert('您的會話已過期，請重新登入。');
-                    window.location.href = 'https://www.ducky-test.tw'; // 替換為你的登入頁面 URL
-                    return;
-                }
-
-                // 更新 AWS 憑證
-                AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-                    IdentityPoolId: IDENTITY_POOL_ID,
-                    Logins: {
-                        [`cognito-idp.${S3_BUCKET_REGION}.amazonaws.com/${COGNITO_USER_POOL_ID}`]: session.getIdToken().getJwtToken()
-                    }
-                });
-
-                // 確保 AWS 憑證已更新
-                AWS.config.credentials.get((err) => {
-                    if (err) {
-                        console.error("無法取得 AWS 憑證:", err);
-                        alert("登入失敗，請檢查你的設定。");
-                        return;
-                    }
-                    console.log("登入成功！");
-                    const userEmail = cognitoUser.getUsername();
-                    userEmailDisplay.textContent = userEmail;
-                });
-            });
-        } else {
-            // 沒有找到使用者，回到登入頁面
-            alert('您尚未登入，請先登入。');
-            window.location.href = 'https://www.ducky-test.tw'; // 替換為你的登入頁面 URL
-        }
-    };
-
-    // 處理檔案上傳
-    uploadBtn.addEventListener('click', async () => {
-        const file = fileInput.files[0];
-        if (!file) {
-            uploadStatus.textContent = '請先選擇一個檔案！';
-            uploadStatus.className = 'mt-4 text-center text-red-500 text-sm';
-            return;
-        }
-
-        uploadStatus.textContent = '上傳中，請稍候...';
-        uploadStatus.className = 'mt-4 text-center text-gray-600 text-sm';
-
-        // 創建使用者專屬的資料夾名稱
-        const userEmail = cognitoUser.getUsername();
-        const folderName = userEmail.split('@')[0]; // 移除 @ 和後面的網域
-        const fileName = file.name;
-
-        // 檔案上傳參數
-        const uploadParams = {
-            Bucket: S3_BUCKET_NAME,
-            Key: `${folderName}/${fileName}`,
-            Body: file,
-            ACL: 'private' // 確保檔案為私有，只有擁有權限的人能存取
-        };
-        
-        const s3 = new AWS.S3({
-            params: { Bucket: S3_BUCKET_NAME },
-            region: S3_BUCKET_REGION
+            if (idToken) {
+                tokenInfoDiv.innerHTML += `
+                    <h2>Tokens Received:</h2>
+                    <p><strong>ID Token:</strong></p>
+                    <pre>${idToken}</pre>
+                    <p><strong>Access Token:</strong></p>
+                    <pre>${accessToken}</pre>
+                    <p><strong>Expires In (seconds):</strong> ${expiresIn}</p>
+                    <p>You can now use these tokens to make authenticated API calls or establish a user session.</p>
+                `;
+                // In a real application, you would typically store these tokens
+                // (e.g., in localStorage or sessionStorage) and then redirect
+                // to your main application page.
+                // Example: window.location.href = '/dashboard';
+            } else {
+                tokenInfoDiv.innerHTML = `
+                    <p style="color: red;">No authentication tokens found in the URL. Authentication may have failed or an error occurred.</p>
+                `;
+            }
         });
-
-        try {
-            await s3.upload(uploadParams).promise();
-            uploadStatus.textContent = '檔案上傳成功！';
-            uploadStatus.className = 'mt-4 text-center text-green-500 text-sm';
-        } catch (err) {
-            console.error("上傳失敗:", err);
-            uploadStatus.textContent = '檔案上傳失敗: ' + err.message;
-            uploadStatus.className = 'mt-4 text-center text-red-500 text-sm';
-        }
-    });
-
-    // 處理登出
-    logoutBtn.addEventListener('click', () => {
-        if (cognitoUser) {
-            cognitoUser.signOut();
-            window.location.href = 'https://www.ducky-test.tw'; // 替換為你的登入頁面 URL
-        }
-    });
-
-    // 在頁面載入時檢查使用者會話
-    checkUserSession();
-</script>
-
+    </script>
 </body>
 </html>
