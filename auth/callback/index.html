@@ -28,12 +28,12 @@
 
 <script>
     // 請在這裡替換成你的 AWS Cognito 和 S3 資訊
-    const COGNITO_USER_POOL_ID = 'us-east-1_0Kius6YB'; // 你的 User Pool ID
-    const COGNITO_CLIENT_ID = '5jg34e0a741v5rfpp006ka5s4a'; // 你的 App Client ID
+    const COGNITO_USER_POOL_ID = 'us-east-1_0Kius6YBt'; // 你的 User Pool ID
+    const COGNITO_CLIENT_ID = '5ug0mo74oh6ma666kd9dkpbqk5'; // 你的 App Client ID
     const S3_BUCKET_REGION = 'us-east-1'; // 你的 S3 儲存桶所在的區域
-    const S3_BUCKET_NAME = 'your-s3-bucket-name'; // 你的 S3 儲存桶名稱
+    const S3_BUCKET_NAME = '2025ithome-ducky'; // 你的 S3 儲存桶名稱
     // 請替換為你的 Identity Pool ID
-    const IDENTITY_POOL_ID = 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    const IDENTITY_POOL_ID = 'us-east-1:4682c527-47ae-4357-b444-bdec69d3f4e2';
 
     // 初始化 Cognito 認證
     const poolData = {
@@ -60,7 +60,7 @@
                     // 會話無效或過期，回到登入頁面
                     console.error("Session is invalid or expired.", err);
                     alert('您的會話已過期，請重新登入。');
-                    window.location.href = 'your-login-page.html'; // 替換為你的登入頁面 URL
+                    window.location.href = 'https://www.ducky-test.tw'; // 替換為你的登入頁面 URL
                     return;
                 }
 
@@ -87,7 +87,7 @@
         } else {
             // 沒有找到使用者，回到登入頁面
             alert('您尚未登入，請先登入。');
-            window.location.href = 'your-login-page.html'; // 替換為你的登入頁面 URL
+            window.location.href = 'https://www.ducky-test.tw'; // 替換為你的登入頁面 URL
         }
     };
 
@@ -136,7 +136,7 @@
     logoutBtn.addEventListener('click', () => {
         if (cognitoUser) {
             cognitoUser.signOut();
-            window.location.href = 'your-login-page.html'; // 替換為你的登入頁面 URL
+            window.location.href = 'https://www.ducky-test.tw'; // 替換為你的登入頁面 URL
         }
     });
 
