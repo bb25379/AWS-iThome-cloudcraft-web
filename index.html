@@ -78,29 +78,6 @@
 
         let userEmail = userPayload.email || userPayload["cognito:username"] || "未知使用者";
         userEmailDisplay.textContent = userEmail;
-
-
-        // 更新 AWS 憑證
-        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-            IdentityPoolId: IDENTITY_POOL_ID,
-            Logins: {
-                [`cognito-idp.${S3_BUCKET_REGION}.amazonaws.com/${COGNITO_USER_POOL_ID}`]: idToken
-            }
-        });
-
-        // 確保 AWS 憑證已更新
-        AWS.config.credentials.get((err) => {
-            if (err) {
-                console.error("無法取得 AWS 憑證:", err);
-                alert("登入失敗，請檢查你的設定。");
-                return;
-            }
-
-            console.log("登入成功！");
-            cognitoUser = userPool.getCurrentUser(); // 取得當前使用者
-            userEmailDisplay.textContent = userEmail;
-            showProfilePage();
-        });
     }
 
     // 處理檔案上傳
