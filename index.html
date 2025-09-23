@@ -74,7 +74,11 @@
     if (accessToken && idToken) {
         // 使用 JWT Token 獲取使用者資訊
         const userPayload = JSON.parse(atob(idToken.split('.')[1]));
-        const userEmail = userPayload.email;
+        console.log("ID Token Payload:", userPayload);
+
+        let userEmail = userPayload.email || userPayload["cognito:username"] || "未知使用者";
+        userEmailDisplay.textContent = userEmail;
+
 
         // 更新 AWS 憑證
         AWS.config.credentials = new AWS.CognitoIdentityCredentials({
