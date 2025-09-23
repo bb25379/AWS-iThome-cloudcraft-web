@@ -66,39 +66,6 @@
         window.location.href = COGNITO_HOSTED_UI_URL;
     });
 
-    // 檢查 URL 中的 JWT Token
-    const urlParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = urlParams.get('access_token');
-    const idToken = urlParams.get('id_token');
-
-    if (accessToken && idToken) {
-        // 使用 JWT Token 獲取使用者資訊
-        const userPayload = JSON.parse(atob(idToken.split('.')[1]));
-        const userEmail = userPayload.email;
-
-        // 更新 AWS 憑證
-        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-            IdentityPoolId: IDENTITY_POOL_ID,
-            Logins: {
-                [`cognito-idp.${S3_BUCKET_REGION}.amazonaws.com/${COGNITO_USER_POOL_ID}`]: idToken
-            }
-        });
-
-        // 確保 AWS 憑證已更新
-        AWS.config.credentials.get((err) => {
-            if (err) {
-                console.error("無法取得 AWS 憑證:", err);
-                alert("登入失敗，請檢查你的設定。");
-                return;
-            }
-
-            console.log("登入成功！");
-            cognitoUser = userPool.getCurrentUser(); // 取得當前使用者
-            userEmailDisplay.textContent = userEmail;
-            showProfilePage();
-        });
-    }
-
     // 處理檔案上傳
     uploadBtn.addEventListener('click', async () => {
         const file = fileInput.files[0];
@@ -142,28 +109,70 @@
 
     // 處理登出
     logoutBtn.addEventListener('click', () => {
-        if (cognitoUser) {
-            cognitoUser.signOut();
-            window.location.href = 'https://www.ducky-test.tw/'; // 替換為你的登入頁面 URL
-        }
+        // 使用 Cognito 提供的登出 URL，並指定重導向 URI
+        window.location.href = `https://ducky-unique123.auth.us-east-1.amazoncognito.com/logout?client_id=${COGNITO_CLIENT_ID}&logout_uri=https://www.ducky-test.tw/index.html`;
     });
 
-    // 檢查是否有有效的登入會話
-    const checkSession = () => {
-        if (!accessToken && !idToken) {
-            // 沒有找到 Token，顯示登入頁面
+    // 輔助函數：顯示使用者個人資料頁面
+    const showProfilePage = (email) => {
+        loginRedirectContainer.classList.add('hidden');
+        profileContainer.classList.remove('hidden');
+        userEmailDisplay.textContent = email;
+    };
+
+    // 檢查 URL 中的 JWT Tokens 或緩存的會話
+    const urlParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = urlParams.get('access_token');
+    const idToken = urlParams.get('id_token');
+
+    if (accessToken && idToken) {
+        // 1. 如果 URL 中有 tokens，表示從 Cognito 託管 UI 登入回來
+        const userPayload = JSON.parse(atob(idToken.split('.')[1]));
+        const userEmail = userPayload.email;
+
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: IDENTITY_POOL_ID,
+            Logins: {
+                [`cognito-idp.${S3_BUCKET_REGION}.amazonaws.com/${COGNITO_USER_POOL_ID}`]: idToken
+            }
+        });
+
+        AWS.config.credentials.get((err) => {
+            if (err) {
+                console.error("無法取得 AWS 憑證:", err);
+                alert("登入失敗，請檢查你的設定。");
+                return;
+            }
+            console.log("登入成功！");
+            showProfilePage(userEmail);
+        });
+        
+        // 清除 URL 中的 tokens 以保持網址乾淨
+        history.replaceState(null, '', location.pathname + location.search);
+
+    } else {
+        // 2. 如果 URL 中沒有 tokens，檢查是否有有效的緩存會話
+        cognitoUser = userPool.getCurrentUser();
+        if (cognitoUser != null) {
+            cognitoUser.getSession((err, session) => {
+                if (err) {
+                    console.error("無法取得會話:", err);
+                    loginRedirectContainer.classList.remove('hidden');
+                    profileContainer.classList.add('hidden');
+                    return;
+                }
+                if (session.isValid()) {
+                    const userPayload = session.getIdToken().decodePayload();
+                    const userEmail = userPayload.email;
+                    showProfilePage(userEmail);
+                }
+            });
+        } else {
+            // 如果沒有 tokens 且沒有緩存會話，顯示登入按鈕
             loginRedirectContainer.classList.remove('hidden');
             profileContainer.classList.add('hidden');
-        } else {
-            // 找到 Token，顯示個人資料頁面
-            loginRedirectContainer.classList.add('hidden');
-            profileContainer.classList.remove('hidden');
         }
-    };
-    
-    // 在頁面載入時檢查登入狀態
-    checkSession();
-
+    }
 </script>
 
 </body>
